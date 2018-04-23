@@ -12,8 +12,8 @@ fps = reader.get_meta_data()['fps']
 # process steps:
 # 1. find those read lines in each frame(remove background).
 # 1+ find start and end frame for each iteration (a possible average over multiple iteration).
-# 3. form a flat plot.
-# 4. roll the flat plot into 3d plot.
+# 2. form a flat plot.
+# 3. roll the flat plot into 3d plot.
 
 frame100 = reader.get_data(100)
 (height, width, channel) = frame100.shape
@@ -23,6 +23,7 @@ frame100 = reader.get_data(100)
 # 1.b then histogram and threshold the variance.
 # 1.c then get receptive field.
 # 1.d find iteration length of the video.
+# 1.e find those line.
 all_mean = np.zeros((height, width, channel))
 all_variance = np.zeros((height, width, channel))
 
@@ -65,3 +66,19 @@ distance = np.empty(frame_acounts)
 for i, im in enumerate(reader):
     maked_im = im/255*mask_frame
     distance[i] = np.sqrt(np.sum((masked_frame100 - maked_im) * (masked_frame100 - maked_im)))
+
+average_n = 500
+cumsum, moving_aves = [0], []
+
+for i, x in enumerate(distance, 1):
+    cumsum.append(cumsum[i-1] + x)
+    if i >= average_n:
+        moving_ave = (cumsum[i] - cumsum[i-average_n])/average_n
+        moving_aves.append(moving_ave)
+
+mini_threshold = 30.0
+a = np.array(moving_aves)
+minimums = (np.r_[True, a[1:] < a[:-1]] & np.r_[a[:-1] < a[1:], True]) & (a < mini_threshold)
+period_ends = np.where(minimums==True)[0][1:]
+period = np.round(np.mean(period_ends[1:] - period_ends[:-1]))
+
