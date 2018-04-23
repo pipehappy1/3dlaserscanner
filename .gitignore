@@ -45,3 +45,4 @@ script/python/__pycache__/
 script/python/theano-example/mnist
 tmp.log.npy
 tmp.model
+*.webm
