@@ -2,6 +2,7 @@ import imageio
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
+from skimage.filters import frangi, hessian
 
 example_video = '/home/yguan/workspace/3dLaserScanner/data/motor.mp4'
 
@@ -23,7 +24,7 @@ frame100 = reader.get_data(100)
 # 1.b then histogram and threshold the variance.
 # 1.c then get receptive field.
 # 1.d find iteration length of the video.
-# 1.e find those line.
+# 1.e find those line by ridge detection.
 all_mean = np.zeros((height, width, channel))
 all_variance = np.zeros((height, width, channel))
 
@@ -58,7 +59,9 @@ mask_frame[mask_top:mask_bottom, mask_left:mask_right, :] = 1
 writer = imageio.get_writer('/home/yguan/workspace/3dLaserScanner/tmp.mp4', fps=fps)
 for im in reader:
     writer.append_data(im*mask_frame)
+
 writer.close()
+
 ## end of dev only
 
 masked_frame100 = frame100/255*mask_frame
@@ -82,3 +85,26 @@ minimums = (np.r_[True, a[1:] < a[:-1]] & np.r_[a[:-1] < a[1:], True]) & (a < mi
 period_ends = np.where(minimums==True)[0][1:]
 period = np.round(np.mean(period_ends[1:] - period_ends[:-1]))
 
+## the following is for dev only.
+writer = imageio.get_writer('/home/yguan/workspace/3dLaserScanner/ridge.mp4', fps=fps)
+for i, im in enumerate(reader):    
+    tframe = im/255*mask_frame
+    #tframe = tframe[mask_top:mask_bottom, mask_left:mask_right, :]
+    tframe = (tframe[:,:,0] + tframe[:,:,1] + tframe[:,:,2])/3
+    tframe = 1 - tframe
+    tframe = frangi(tframe)
+    tmax = np.max(tframe)
+    tmin = np.min(tframe)
+    tframe = (tframe - tmin)/ (tmax - tmin + 0.00001) * 255
+    tframe = np.stack((tframe, tframe, tframe), axis=2)
+    writer.append_data(tframe)
+
+writer.close()
+
+## end of dev only
+
+
+# 2. form a flat plot.
+# 2.a detect the flat base line
+# 2.b use the flat base line to transform to side view by a simple cosine transformation.
+# 2.c 
