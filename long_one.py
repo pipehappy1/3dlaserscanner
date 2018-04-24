@@ -1,8 +1,9 @@
 import imageio
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import ndimage
+from scipy import ndimage, stats
 from skimage.filters import frangi, hessian
+
 
 example_video = '/home/yguan/workspace/3dLaserScanner/data/motor.mp4'
 
@@ -85,6 +86,11 @@ minimums = (np.r_[True, a[1:] < a[:-1]] & np.r_[a[:-1] < a[1:], True]) & (a < mi
 period_ends = np.where(minimums==True)[0][1:]
 period = np.round(np.mean(period_ends[1:] - period_ends[:-1]))
 
+ridge_frame100 = frame100[mask_top:mask_bottom, mask_left:mask_right, :]/255
+ridge_frame100 = np.sum(ridge_frame100, axis=2)/3
+ridge_frame100 = 1 - ridge_frame100
+ridge_frame100 = frangi(ridge_frame100)
+
 ## the following is for dev only.
 writer = imageio.get_writer('/home/yguan/workspace/3dLaserScanner/ridge.mp4', fps=fps)
 for i, im in enumerate(reader):    
@@ -107,4 +113,35 @@ writer.close()
 # 2. form a flat plot.
 # 2.a detect the flat base line
 # 2.b use the flat base line to transform to side view by a simple cosine transformation.
-# 2.c 
+quad_frame = frame100[int(height*0.75):height, 50:int(width*0.25), :]/255
+quad_frame = np.sum(quad_frame, axis=2)/3
+(base_line_y, base_line_x) = np.where(quad_frame > np.mean(quad_frame))
+slope, intercept, r_value, p_value, std_err = stats.linregress(base_line_x, base_line_y)
+
+side_view100 = ndimage.affine_transform(ridge_frame100, np.array([[1,slope],[0, 1]]))
+
+## for dev only
+writer = imageio.get_writer('/home/yguan/workspace/3dLaserScanner/side_view.mp4', fps=fps)
+for i, im in enumerate(reader):    
+    tframe = im/255*mask_frame
+    #tframe = tframe[mask_top:mask_bottom, mask_left:mask_right, :]
+    tframe = (tframe[:,:,0] + tframe[:,:,1] + tframe[:,:,2])/3
+    tframe = 1 - tframe
+    tframe = frangi(tframe)
+    tframe = ndimage.affine_transform(tframe, np.array([[1,slope],[0, 1]]))
+    tmax = np.max(tframe)
+    tmin = np.min(tframe)
+    tframe = (tframe - tmin)/ (tmax - tmin + 0.00001) * 255
+    tframe = np.stack((tframe, tframe, tframe), axis=2)
+    writer.append_data(tframe)
+
+writer.close()
+## end of dev only
+
+
+# 3. roll the flat plot into 3d plot.
+# 3.a find the center axis.
+# 3.b roll it.
+# 3.c create 3d mesh.
+
+

@@ -3,4 +3,4 @@ imageio
 matplotlib
 scipy
 scikit-image
-
+numpy-stl
