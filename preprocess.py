@@ -92,9 +92,9 @@ class Preprocess:
 
         print('[info] period: {}'.format(period))
 
-        try:
-            self.meta.write()
-        except Exception:
-            print('[error] meta writing error!')
+        #try:
+        #    self.meta.write()
+        #except Exception:
+        #    print('[error] meta writing error!')
 
         return self.meta

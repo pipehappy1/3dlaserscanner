@@ -13,7 +13,12 @@ class Meta:
                  'mask_bottom':int,
                  'mask_left':int,
                  'mask_right':int,
-                 'period':int}
+                 'period':int,
+                 'slope_window_top':int,
+                 'slope_window_bottom':int,
+                 'slope_window_left':int,
+                 'slope_window_right':int,
+                 'slope':float}
     
     def __init__(self):
         self.video = ''
@@ -27,21 +32,17 @@ class Meta:
         self.mask_left = -1
         self.mask_right = -1
         self.period = -1
+        self.slope_window_top = -1
+        self.slope_window_bottom = -1
+        self.slope_window_left = -1
+        self.slope_window_right = -1
+        self.slope = 0.0
 
     def write(self):
         file_name = os.path.basename(self.video).split(os.path.extsep)[0]
         with open(os.path.join(os.path.dirname(self.video), file_name+os.path.extsep+Meta.meta_postfix), 'w') as wfh:
-            wfh.write('video:{}\n'.format(self.video))
-            wfh.write('frame_acounts:{}\n'.format(self.frame_acounts))
-            wfh.write('fps:{}\n'.format(self.fps))
-            wfh.write('height:{}\n'.format(self.height))
-            wfh.write('width:{}\n'.format(self.width))
-            wfh.write('channel:{}\n'.format(self.channel))
-            wfh.write('mask_top:{}\n'.format(self.mask_top))
-            wfh.write('mask_bottom:{}\n'.format(self.mask_bottom))
-            wfh.write('mask_left:{}\n'.format(self.mask_left))
-            wfh.write('mask_right:{}\n'.format(self.mask_right))
-            wfh.write('period:{}\n'.format(self.period))
+            for k, v in self.data_type.items():
+                wfh.write('{}:{}\n'.format(k, self.__dict__[k]))
 
     def read(self):
         file_name = os.path.basename(self.video).split(os.path.extsep)[0]
