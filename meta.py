@@ -18,7 +18,9 @@ class Meta:
                  'slope_window_bottom':int,
                  'slope_window_left':int,
                  'slope_window_right':int,
-                 'slope':float}
+                 'slope':float,
+                 'center_axis':int,
+                 'slices':int}
     
     def __init__(self):
         self.video = ''
@@ -37,6 +39,8 @@ class Meta:
         self.slope_window_left = -1
         self.slope_window_right = -1
         self.slope = 0.0
+        self.center_axis = -1
+        self.slices = -1
 
     def write(self):
         file_name = os.path.basename(self.video).split(os.path.extsep)[0]
@@ -51,7 +55,7 @@ class Meta:
             while line:
                 line = line.strip()
                 (name, value) = line.split(':')
-                print("{},{}".format(name,value))
+                print("[info] {}:{}".format(name,value))
                 self.__dict__[name] = Meta.data_type[name](value)
                 line = rfh.readline()
 
