@@ -7,13 +7,13 @@ from meta import Meta
 
 class Preprocess:
     def __init__(self, video_url):
-        self.meta = Meta
+        self.meta = Meta()
         self.meta.video = video_url
 
     def preprocess(self):
         reader = imageio.get_reader(self.meta.video)
         frame_acounts = reader.get_length()
-        fps = reader.get_meta_data()['fps']
+        fps = int(reader.get_meta_data()['fps'])
 
         frame100 = reader.get_data(100)
         (height, width, channel) = frame100.shape
@@ -87,12 +87,14 @@ class Preprocess:
         a = np.array(moving_aves)
         minimums = (np.r_[True, a[1:] < a[:-1]] & np.r_[a[:-1] < a[1:], True]) & (a < mini_threshold)
         period_ends = np.where(minimums==True)[0][1:]
-        period = np.round(np.mean(period_ends[1:] - period_ends[:-1]))
+        period = int(np.round(np.mean(period_ends[1:] - period_ends[:-1])))
         self.meta.period = period
 
         print('[info] period: {}'.format(period))
 
         try:
             self.meta.write()
+        except Exception:
+            print('[error] meta writing error!')
 
         return self.meta

@@ -1,7 +1,19 @@
 import os
 
 class Meta:
-    meta_postfix = '.meta'
+    meta_postfix = 'meta'
+
+    data_type = {'video':str,
+                 'frame_acounts':int,
+                 'fps':int,
+                 'height':int,
+                 'width':int,
+                 'channel':int,
+                 'mask_top':int,
+                 'mask_bottom':int,
+                 'mask_left':int,
+                 'mask_right':int,
+                 'period':int}
     
     def __init__(self):
         self.video = ''
@@ -16,11 +28,9 @@ class Meta:
         self.mask_right = -1
         self.period = -1
 
-        pass
-
     def write(self):
         file_name = os.path.basename(self.video).split(os.path.extsep)[0]
-        with open(os.path.join(os.path.dirname(self.video), os.path.extsep, meta_postfix), 'w') as wfh:
+        with open(os.path.join(os.path.dirname(self.video), file_name+os.path.extsep+Meta.meta_postfix), 'w') as wfh:
             wfh.write('video:{}\n'.format(self.video))
             wfh.write('frame_acounts:{}\n'.format(self.frame_acounts))
             wfh.write('fps:{}\n'.format(self.fps))
@@ -35,7 +45,14 @@ class Meta:
 
     def read(self):
         file_name = os.path.basename(self.video).split(os.path.extsep)[0]
-        with open(os.path.join(os.path.dirname(self.video), os.path.extsep, meta_postfix), 'r') as wfh:
-            pass
+        with open(os.path.join(os.path.dirname(self.video), file_name+os.path.extsep+Meta.meta_postfix), 'r') as rfh:
+            line = rfh.readline()
+            while line:
+                line = line.strip()
+                (name, value) = line.split(':')
+                print("{},{}".format(name,value))
+                self.__dict__[name] = Meta.data_type[name](value)
+                line = rfh.readline()
+
 
     
