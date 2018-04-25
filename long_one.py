@@ -91,6 +91,11 @@ ridge_frame100 = np.sum(ridge_frame100, axis=2)/3
 ridge_frame100 = 1 - ridge_frame100
 ridge_frame100 = frangi(ridge_frame100)
 
+ridge_frame1200 = frame1200[mask_top:mask_bottom, mask_left:mask_right, :]/255
+ridge_frame1200 = np.sum(ridge_frame1200, axis=2)/3
+ridge_frame1200 = 1 - ridge_frame1200
+ridge_frame1200 = frangi(ridge_frame1200)
+
 ## the following is for dev only.
 writer = imageio.get_writer('/home/yguan/workspace/3dLaserScanner/ridge.mp4', fps=fps)
 for i, im in enumerate(reader):    
@@ -144,4 +149,13 @@ writer.close()
 # 3.b roll it.
 # 3.c create 3d mesh.
 
+center_axis = 305 ## <-- need to set somehow.
+masked_center = center_axis - mask_left
+full = np.concatenate((side_view100[:,:masked_center], np.fliplr(side_view1200[:,:masked_center])), axis=1)
+full = (full-np.min(full))/ (np.max(full) - np.min(full) + 0.0001)
+full = 1 - full
+full = frangi(full)
+full = (full-np.min(full))/ (np.max(full) - np.min(full) + 0.0001)
 
+full[full < 0.1] = 0
+thinner_frame100 = ndimage.grey_erosion(full, size=5)
