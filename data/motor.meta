@@ -1,0 +1,16 @@
+video:/home/yguan/workspace/3dLaserScanner/data/motor.mp4
+frame_acounts:7755
+fps:250
+height:480
+width:640
+channel:3
+mask_top:164
+mask_bottom:371
+mask_left:198
+mask_right:369
+period:2200
+slope_window_top:360
+slope_window_bottom:480
+slope_window_left:50
+slope_window_right:160
+slope:-0.5327403569427095
